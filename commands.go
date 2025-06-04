@@ -25,9 +25,9 @@ var commandMap = map[string]cliCommand{
 }
 
 func commandExit() error {
-	err := fmt.Errorf("Closing the Pokedex...Goodbye!")
+	err := fmt.Errorf("Closing the Pokedex... Goodbye!")
 	fmt.Printf("%v\n", err)
-	os.Exit(0)
+	defer os.Exit(0)
 	return err
 }
 
