@@ -1,4 +1,4 @@
-package cleaninput
+package main
 
 import (
 	"strings"

@@ -1,27 +1,26 @@
 package main
 
 import (
-	"testing";
-	"github.com/UUest/pokecli/cleaninput"
+	"testing"
 )
 
 func TestCleanInput(t *testing.T) {
 	cases := []struct {
-		input string
+		input    string
 		expected []string
 	}{
 		{
-			input: "hello world",
+			input:    "hello world",
 			expected: []string{"hello", "world"},
 		},
 		{
-			input: "heya erf",
+			input:    "heya erf",
 			expected: []string{"heya", "erf"},
 		},
 	}
 
 	for _, c := range cases {
-		actual := cleaninput.CleanInput(c.input)
+		actual := CleanInput(c.input)
 		for i := range actual {
 			word := actual[i]
 			expectedWord := c.expected[i]

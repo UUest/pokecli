@@ -4,9 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
-
-	"github.com/UUest/pokecli/cleaninput"
 )
 
 func main() {
@@ -15,9 +12,16 @@ func main() {
 		fmt.Print("Pokedex >")
 		scanner.Scan()
 		text := scanner.Text()
-		cleanText := cleaninput.CleanInput(text)
+		cleanText := CleanInput(text)
 		if len(cleanText) != 0 {
-			fmt.Printf("Your command was: %s\n", strings.ToLower(cleanText[0]))
+			if command, ok := commands[cleanText[0]]; ok {
+				err := command.callback()
+				if err != nil {
+					fmt.Printf("Error: %v\n", err)
+				}
+			} else {
+				fmt.Printf("Unknown command: %s\n", cleanText[0])
+			}
 		} else {
 			fmt.Println("No command entered")
 			continue
