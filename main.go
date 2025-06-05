@@ -14,7 +14,7 @@ func main() {
 		text := scanner.Text()
 		cleanText := CleanInput(text)
 		if len(cleanText) != 0 {
-			if command, ok := commandMap[cleanText[0]]; ok {
+			if command, ok := commands[cleanText[0]]; ok {
 				err := command.callback()
 				if err != nil {
 					fmt.Printf("Error: %v\n", err)
