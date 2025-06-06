@@ -3,14 +3,17 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+
+	"github.com/UUest/pokecli/internal/pokecache"
 )
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*Config) error
 }
 
 type locationArea struct {
@@ -23,9 +26,10 @@ type locationArea struct {
 	} `json:"results"`
 }
 
-type config struct {
+type Config struct {
 	NextURL     string
 	PreviousURL string
+	Cache       *pokecache.Cache
 }
 
 var commands = map[string]cliCommand{
@@ -51,14 +55,14 @@ var commands = map[string]cliCommand{
 	},
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *Config) error {
 	err := fmt.Errorf("Closing the Pokedex... Goodbye!")
 	fmt.Printf("%v\n", err)
 	defer os.Exit(0)
 	return err
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *Config) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println("")
@@ -69,19 +73,28 @@ func commandHelp(cfg *config) error {
 
 var offset int = 0
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *Config) error {
 	url := cfg.NextURL
 	if url == "" {
 		url = "https://pokeapi.co/api/v2/location-area?limit=20&offset=0"
 	}
-	res, err := http.Get(url)
-	if err != nil {
-		return fmt.Errorf("Failed to fetch data from PokeAPI: %v", err)
+	var raw []byte
+	if v, ok := cfg.Cache.Get(url); ok {
+		raw = v
+	} else {
+		res, err := http.Get(url)
+		if err != nil {
+			return fmt.Errorf("Failed to fetch data from PokeAPI: %v", err)
+		}
+		defer res.Body.Close()
+		raw, err = io.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("Failed to read response body: %v", err)
+		}
+		cfg.Cache.Add(url, raw)
 	}
-	defer res.Body.Close()
-	locationAreaData := locationArea{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&locationAreaData)
+	var locationAreaData locationArea
+	err := json.Unmarshal(raw, &locationAreaData)
 	if err != nil {
 		return fmt.Errorf("Failed to parse data from PokeAPI: %v", err)
 	}
@@ -93,19 +106,28 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapb(cfg *config) error {
+func commandMapb(cfg *Config) error {
 	url := cfg.PreviousURL
 	if url == "" {
 		return fmt.Errorf("you're on the first page")
 	}
-	res, err := http.Get(url)
-	if err != nil {
-		return fmt.Errorf("Failed to fetch data from PokeAPI: %v", err)
+	var raw []byte
+	if v, ok := cfg.Cache.Get(url); ok {
+		raw = v
+	} else {
+		res, err := http.Get(url)
+		if err != nil {
+			return fmt.Errorf("Failed to fetch data from PokeAPI: %v", err)
+		}
+		defer res.Body.Close()
+		raw, err = io.ReadAll(res.Body)
+		if err != nil {
+			return fmt.Errorf("Failed to read response body: %v", err)
+		}
+		cfg.Cache.Add(url, raw)
 	}
-	defer res.Body.Close()
 	locationAreaData := locationArea{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&locationAreaData)
+	err := json.Unmarshal(raw, &locationAreaData)
 	if err != nil {
 		return fmt.Errorf("Failed to parse data from PokeAPI: %v", err)
 	}
