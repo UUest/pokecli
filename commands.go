@@ -10,17 +10,22 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
 type locationArea struct {
 	Count    int    `json:"count"`
 	Next     string `json:"next"`
-	Previous any    `json:"previous"`
+	Previous string `json:"previous"`
 	Results  []struct {
 		Name string `json:"name"`
 		URL  string `json:"url"`
 	} `json:"results"`
+}
+
+type config struct {
+	NextURL     string
+	PreviousURL string
 }
 
 var commands = map[string]cliCommand{
@@ -46,14 +51,14 @@ var commands = map[string]cliCommand{
 	},
 }
 
-func commandExit() error {
+func commandExit(cfg *config) error {
 	err := fmt.Errorf("Closing the Pokedex... Goodbye!")
 	fmt.Printf("%v\n", err)
 	defer os.Exit(0)
 	return err
 }
 
-func commandHelp() error {
+func commandHelp(cfg *config) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println("")
@@ -64,8 +69,11 @@ func commandHelp() error {
 
 var offset int = 0
 
-func commandMap() error {
-	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area?limit=20&offset=%d", offset)
+func commandMap(cfg *config) error {
+	url := cfg.NextURL
+	if url == "" {
+		url = "https://pokeapi.co/api/v2/location-area?limit=20&offset=0"
+	}
 	res, err := http.Get(url)
 	if err != nil {
 		return fmt.Errorf("Failed to fetch data from PokeAPI: %v", err)
@@ -80,14 +88,14 @@ func commandMap() error {
 	for _, location := range locationAreaData.Results {
 		fmt.Printf("%v\n", location.Name)
 	}
-	offset += 20
+	cfg.NextURL = locationAreaData.Next
+	cfg.PreviousURL = locationAreaData.Previous
 	return nil
 }
 
-func commandMapb() error {
-	offset -= 20
-	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area?limit=20&offset=%d", offset)
-	if offset <= 0 {
+func commandMapb(cfg *config) error {
+	url := cfg.PreviousURL
+	if url == "" {
 		return fmt.Errorf("you're on the first page")
 	}
 	res, err := http.Get(url)
@@ -104,5 +112,7 @@ func commandMapb() error {
 	for _, location := range locationAreaData.Results {
 		fmt.Printf("%v\n", location.Name)
 	}
+	cfg.NextURL = locationAreaData.Next
+	cfg.PreviousURL = locationAreaData.Previous
 	return nil
 }

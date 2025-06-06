@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	cfg := &config{}
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Pokedex >")
@@ -15,7 +16,7 @@ func main() {
 		cleanText := CleanInput(text)
 		if len(cleanText) != 0 {
 			if command, ok := commands[cleanText[0]]; ok {
-				err := command.callback()
+				err := command.callback(cfg)
 				if err != nil {
 					fmt.Printf("Error: %v\n", err)
 				}
