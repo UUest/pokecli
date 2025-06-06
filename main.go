@@ -21,7 +21,12 @@ func main() {
 		cleanText := CleanInput(text)
 		if len(cleanText) != 0 {
 			if command, ok := commands[cleanText[0]]; ok {
-				err := command.callback(cfg)
+				var err error
+				if cleanText[0] == "explore" && len(cleanText) > 1 {
+					err = command.callback(cfg, cleanText[1])
+				} else {
+					err = command.callback(cfg)
+				}
 				if err != nil {
 					fmt.Printf("Error: %v\n", err)
 				}
@@ -31,10 +36,6 @@ func main() {
 		} else {
 			fmt.Println("No command entered")
 			continue
-		}
-		if cleanText[0] == "exit" {
-			fmt.Println("Exiting...")
-			break
 		}
 	}
 }
