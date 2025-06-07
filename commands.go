@@ -393,6 +393,11 @@ func init() {
 			description: "Catch a Pokemon",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Inspect a Pokemon",
+			callback:    commandInspect,
+		},
 	}
 }
 
@@ -557,4 +562,29 @@ func commandCatch(cfg *Config, pokemon ...string) error {
 		fmt.Printf("%v escaped!\n", pokemon[0])
 	}
 	return nil
+}
+
+func commandInspect(cfg *Config, pokemon ...string) error {
+	if pokemon == nil || len(pokemon) == 0 {
+		return fmt.Errorf("Please provide a Pokemon")
+	}
+	if pkm, ok := cfg.Pokedex[pokemon[0]]; ok {
+		fmt.Printf("Inspecting %v...\n", pokemon[0])
+		fmt.Printf("Name: %v\n", pkm.Name)
+		fmt.Printf("Height: %v\n", pkm.Height)
+		fmt.Printf("Weight: %v\n", pkm.Weight)
+		fmt.Println("Stats:")
+		fmt.Printf("   - HP: %v\n", pkm.Stats[0].BaseStat)
+		fmt.Printf("   - Attack: %v\n", pkm.Stats[1].BaseStat)
+		fmt.Printf("   - Defense: %v\n", pkm.Stats[2].BaseStat)
+		fmt.Printf("   - Special Attack: %v\n", pkm.Stats[3].BaseStat)
+		fmt.Printf("   - Special Defense: %v\n", pkm.Stats[4].BaseStat)
+		fmt.Printf("   - Speed: %v\n", pkm.Stats[5].BaseStat)
+		fmt.Println("Type:")
+		for _, t := range pkm.Types {
+			fmt.Printf("   - %v\n", t.Type.Name)
+		}
+		return nil
+	}
+	return fmt.Errorf("Pokemon not found in Pokedex")
 }

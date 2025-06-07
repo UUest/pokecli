@@ -27,6 +27,8 @@ func main() {
 					err = command.callback(cfg, cleanText[1])
 				} else if cleanText[0] == "catch" && len(cleanText) > 1 {
 					err = command.callback(cfg, cleanText[1])
+				} else if cleanText[0] == "inspect" && len(cleanText) > 1 {
+					err = command.callback(cfg, cleanText[1])
 				} else {
 					err = command.callback(cfg)
 				}
