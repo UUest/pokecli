@@ -398,6 +398,11 @@ func init() {
 			description: "Inspect a Pokemon",
 			callback:    commandInspect,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Display the Pokedex",
+			callback:    commandPokedex,
+		},
 	}
 }
 
@@ -587,4 +592,16 @@ func commandInspect(cfg *Config, pokemon ...string) error {
 		return nil
 	}
 	return fmt.Errorf("Pokemon not found in Pokedex")
+}
+
+func commandPokedex(cfg *Config, pokemon ...string) error {
+	fmt.Println("Pokedex:")
+	if len(cfg.Pokedex) == 0 {
+		fmt.Println("No Pokemon caught yet!")
+		return nil
+	}
+	for _, pkm := range cfg.Pokedex {
+		fmt.Printf("   - %v\n", pkm.Name)
+	}
+	return nil
 }
