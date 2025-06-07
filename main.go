@@ -11,7 +11,8 @@ import (
 
 func main() {
 	cfg := &Config{
-		Cache: pokecache.NewCache(5 * time.Second),
+		Cache:   pokecache.NewCache(5 * time.Second),
+		Pokedex: make(map[string]Pokemon),
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -23,6 +24,8 @@ func main() {
 			if command, ok := commands[cleanText[0]]; ok {
 				var err error
 				if cleanText[0] == "explore" && len(cleanText) > 1 {
+					err = command.callback(cfg, cleanText[1])
+				} else if cleanText[0] == "catch" && len(cleanText) > 1 {
 					err = command.callback(cfg, cleanText[1])
 				} else {
 					err = command.callback(cfg)
